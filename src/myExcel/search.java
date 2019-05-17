@@ -1,4 +1,4 @@
-package search;
+package myExcel;
 //查询某个时间，某个阅览室所有座位的情况（占用，空闲XX分钟，未分配）
 import java.time.LocalDateTime ;
 import java.time.Month;
@@ -18,11 +18,11 @@ import java.io.*;
 
 public class search {
 	public LocalDateTime checkTime;//查询的时间存入checkTime中
-	public int RoomNum;//阅览室数（需要直接赋值）
-	public int seatNum;//阅览室的座位数（需要直接赋值，暂定每个阅览室座位数相同）
+	public int RoomNum=2;//阅览室数（需要直接赋值）
+	public int seatNum=4;//阅览室的座位数（需要直接赋值，暂定每个阅览室座位数相同）
 	public int checkRoom;//查询的阅览室号
-	public int seatState[][]=new int[RoomNum-1][seatNum-1];//所有阅览室的座位状态 ，seatState[1][2]表示1号阅览室2号座位状态【0：占用】【-1：未分配】【正整数XX：空闲XX分钟】
-	public String seatOwn[][]=new String[RoomNum-1][seatNum-1];//座位所拥有情况，seatOwn[1][0]="旅行社151105"表示阅览室1的座位0被分配给这名学生
+	public int seatState[][]=new int[RoomNum][seatNum];//所有阅览室的座位状态 ，seatState[1][2]表示1号阅览室2号座位状态【0：占用】【-1：未分配】【正整数XX：空闲XX分钟】
+	public String seatOwn[][]= {{"旅行社151105","旅行社151106","旅行社151107","旅行社151108"},{"旅行社151109","旅行社151110","旅游管理1610105",null}};//座位所拥有情况，seatOwn[1][0]="旅行社151105"表示阅览室1的座位0被分配给这名学生
 	public void giveSeat() throws IOException {//初始化座位情况
 		for(int i=0;i<RoomNum;i++)
 		{
@@ -36,6 +36,11 @@ public class search {
 			}
 		}
 	}
+	public search(){
+		RoomNum=2;
+		seatNum=4;
+		
+	}
 	public void getCheckTime() {
 		checkTime=LocalDateTime.now();//获取查询时间，debug用直接调用现在的时间
 		/*
@@ -44,16 +49,16 @@ public class search {
 	}
 
 	public void getSeatNum(){
-		seatNum=10;//获取阅览室座位数
+		seatNum=4;//获取阅览室座位数
 		/*
 		 * 从界面获取阅览室座位数，待完成
 		 * 
 		 */
 	}
 	public void getAllSeatState(int a,LocalDateTime checkTime) throws BiffException, IOException {//更新a号阅览室座位状态(a从0开始）
-		if(a>RoomNum||a<0)
+		if(a>=RoomNum||a<0)
 		{
-			System.out.println("阅览室号输入有误，输入范围：0-"+RoomNum);
+			System.out.println("阅览室号输入有误，输入范围：0-"+(RoomNum-1));
 		}
 		else {
 			for(int i=0;i<seatNum;i++)
@@ -85,17 +90,24 @@ public class search {
 	            int col = sheet.getColumns();
 	            for(int j=0;j<col;j++) {
 	            	String cell1 = sheet.getCell(0, j).getContents();//cell1是学生名字
-	            	if(cell1==tclass)//找到对应学生
+	            	if(cell1.indexOf(tclass, 0) != -1)//找到对应学生
 	            	{
 	            		int weekday=getWeekDay(checkTime);
-	            		int temprow=weekday*5;
+	            		if(weekday==0)
+	            		{
+	            			return 0;
+	            		}
+	            		int temprow=(weekday-1)*5;
 	            		int rowpoint;
-	            		for(int i=0;i<5;i++) 
+	            		for(int i=1;i<=5;i++) 
 	            		{
 	            			rowpoint=temprow+i;
-	            			String cell2 = sheet.getCell(rowpoint, j).getContents();
-	            			if(cell2.equals("1")) {//找到一个有课的
-	            				int min =getMin(checkTime,i+1);
+	            			//String cell2 = sheet.getCell(rowpoint, j).getContents();
+	                        String cell2 = sheet.getCell(rowpoint, j).getContents();  
+	                        char[] cellout1=cell2.toCharArray();
+	                        char ii='1';
+	            			if(ii==cellout1[0]) {//找到一个有课的
+	            				int min =getMin(checkTime,i);
 	            				if(min!=0)
 	            				{
 	            					return min;
@@ -110,7 +122,8 @@ public class search {
 	}
 	public int getWeekNum(LocalDateTime checkTime) {//根据时间获取周数，若不在课程周内，返回0，否则返回第X周
 		int day = checkTime.getDayOfYear();
-		int weekNum=(day+1)/7-9;
+		int year = checkTime.getYear();
+		int weekNum=(day+(year-2018)*365)/7+2-36;
 		if(weekNum<1||weekNum>20)
 		{
 			return 0;
@@ -119,7 +132,9 @@ public class search {
 	}
 	public int getWeekDay(LocalDateTime checkTime) {//返回星期X，由于课表只有周一到周五的课，所以返回值为0表示周末，返回1-5表示周1-5
 		int dayNum=checkTime.getDayOfYear();
-		int weekDay=dayNum%7+1;
+		int year = checkTime.getYear();
+		dayNum=dayNum+(year-2018)*365;
+		int weekDay=dayNum%7;
 		if(weekDay<1||weekDay>5)
 		{
 			return 0;
@@ -148,8 +163,12 @@ public class search {
 		int endMin=endTime.getMinute();
 		int min=(endHour-checkHour)*60+(endMin-checkMin);
 		if(min>0)
+		{
 			return min;
+		}
+		else {
 		return 0;
+		}
 	}
 	public int getMin(LocalDateTime checkTime,int i)//给定查询时间，课程号i（i=1-5）, 获取状态（还剩XX分钟下课，或者返回0表示没上课）
 	{	
@@ -182,7 +201,11 @@ public class search {
 			default:
 				return 0;
 		}
-		int min=getMin(checkTime,endTime);
-		return min;
+		if (checkTime.isAfter(beginTime)&&checkTime.isBefore(endTime))
+		{
+			int min=getMin(checkTime,endTime);
+			return min;
+		}
+		return 0;
 	}
 }

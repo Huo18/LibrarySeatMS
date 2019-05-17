@@ -26,30 +26,30 @@ public class myExcel {
     	//读取./word/课程总表.xls     // 备注 原 课程总表.xls L和M重叠，当前word文件夹下为已修正结果
     	scd.readExcel();
     	
-    	
-    	//查询处理结果
-        File file3 = new File("./word/class.xls");
-        Workbook wb3 = Workbook.getWorkbook(file3);
-        
-        //查询接口
-        int myweeks=19;//当前周数 1-20 
-        String tclass="1640701";//当前班级 输入具体班号
-        int tweek=1; //周 1-5  
-        int ttime=1; //第 1-5 节
-        
-        // myout '1' 有课    '0'  无课    3 有错误
-        char myout = scd.readExcel(myweeks,tclass,tweek,ttime, file3); 
-        System.out.println(myout);       
-        char i='1',j='0',k=3;
-        if(myout==i) {
-        	System.out.println("当前有课");
-        }else if(myout==j){
-        	System.out.println("当前无课");
-        }else if(myout==k){
-        	System.out.println("输出有误");
-        }else{
-        	System.out.println("其他情况");//不可能有这个返回
-        }                       
+//    	
+//    	//查询处理结果
+//        File file3 = new File("./word/class.xls");
+//        Workbook wb3 = Workbook.getWorkbook(file3);
+//        
+//        //查询接口
+//        int myweeks=19;//当前周数 1-20 
+//        String tclass="1640701";//当前班级 输入具体班号
+//        int tweek=1; //周 1-5  
+//        int ttime=1; //第 1-5 节
+//        
+//        // myout '1' 有课    '0'  无课    3 有错误
+//        char myout = scd.readExcel(myweeks,tclass,tweek,ttime, file3); 
+//        System.out.println(myout);       
+//        char i='1',j='0',k=3;
+//        if(myout==i) {
+//        	System.out.println("当前有课");
+//        }else if(myout==j){
+//        	System.out.println("当前无课");
+//        }else if(myout==k){
+//        	System.out.println("输出有误");
+//        }else{
+//        	System.out.println("其他情况");//不可能有这个返回
+//        }                       
     }  	
 
 /////////////////////////////////////////////////////////////////////////////////////////////
